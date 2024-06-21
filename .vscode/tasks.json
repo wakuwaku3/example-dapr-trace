@@ -1,0 +1,28 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "daprd-debug-server",
+			"type": "daprd",
+			"appId": "server",
+			"appPort": 6006,
+			"metricsPort": 9090
+		},
+		{
+			"label": "daprd-down-server",
+			"type": "daprd-down",
+			"appId": "server"
+		},
+		{
+			"label": "daprd-debug-client",
+			"type": "daprd",
+			"appId": "client",
+			"metricsPort": 9091
+		},
+		{
+			"label": "daprd-down-client",
+			"type": "daprd-down",
+			"appId": "client"
+		}
+	]
+}

@@ -1,0 +1,42 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/go-postgres
+{
+	"name": "example-dapr-trace code space",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "app",
+	"remoteUser": "vscode",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+	"features": {
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {
+			"moby": true,
+			"azureDnsAutoDetection": true,
+			"installDockerBuildx": true,
+			"installDockerComposeSwitch": true,
+			"version": "latest",
+			"dockerDashComposeVersion": "latest"
+		}
+	},
+	"forwardPorts": [
+		9411
+	],
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-vscode.go",
+				"ms-azuretools.vscode-dapr",
+				"ms-azuretools.vscode-docker",
+				"p1c2u.docker-compose",
+				"esbenp.prettier-vscode",
+				"wmaurer.change-case",
+				"streetsidesoftware.code-spell-checker",
+				"GitHub.copilot",
+				"GitHub.copilot-chat",
+				"GitHub.vscode-pull-request-github",
+				"wmaurer.change-case",
+				"humao.rest-client"
+			]
+		}
+	},
+	// Always run image-defined docker-init.sh to enable docker-in-docker
+	"overrideCommand": false
+}

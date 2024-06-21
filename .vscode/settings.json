@@ -1,0 +1,16 @@
+{
+  "cSpell.ignorePaths": [
+    ".git/objects",
+    ".vscode",
+    ".devcontainer/devcontainer.json",
+  ],
+  "cSpell.words": [
+    "dapr",
+    "opentelemetry",
+    "otel",
+    "sdktrace",
+    "semconv",
+    "traceparent",
+    "zipkin"
+  ]
+}

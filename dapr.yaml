@@ -1,0 +1,9 @@
+version: 1
+apps:
+  - appDirPath: ./server/
+    appID: server
+    appPort: 6006
+    command: ["go", "run", "."]
+  - appID: client
+    appDirPath: ./client/
+    command: ["go", "run", "."]
