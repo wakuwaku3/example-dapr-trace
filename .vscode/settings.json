@@ -6,8 +6,12 @@
   ],
   "cSpell.words": [
     "dapr",
+    "errorsx",
+    "HTTPURL",
+    "httpx",
     "opentelemetry",
     "otel",
+    "otelx",
     "sdktrace",
     "semconv",
     "traceparent",
