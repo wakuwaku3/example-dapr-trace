@@ -38,5 +38,9 @@
 		}
 	},
 	// Always run image-defined docker-init.sh to enable docker-in-docker
-	"overrideCommand": false
+	"overrideCommand": false,
+	// "postAttachCommand": [
+	// 	"cd /workspaces/example-dapr-trace",
+	// 	"./operations/init.sh"
+	// ]
 }

@@ -32,4 +32,4 @@ dapr run -f .
 
 ### zipkin にアクセスする
 
-9411 ポートをフォワーディングして、 http://localhost:9411 にアクセスする
+http://localhost:9411 にアクセスする

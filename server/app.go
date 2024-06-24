@@ -43,12 +43,14 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt, os.Kill)
 	defer cancel()
 
-	shutdown, err := otelx.Init(&otelx.TraceProviderOption{
-		ServiceName: "server",
-	}, &otelx.ZipkinOption{
-		URL:    "http://localhost:9411/api/v2/spans",
-		Logger: log.New(os.Stderr, "", log.Ldate|log.Ltime|log.Llongfile),
-	})
+	shutdown, err := otelx.NewBuilder().
+		WithTraceProviderFactory(&otelx.ZipkinTraceProviderFactory{
+			URL:         "http://localhost:9411/api/v2/spans",
+			Logger:      log.New(os.Stderr, "", log.Ldate|log.Ltime|log.Llongfile),
+			ServiceName: "server",
+		}).
+		Build(ctx)
+
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -9,6 +9,7 @@ import (
 
 	"github.com/wakuwaku3/example-dapr-trace/server/lib/errorsx"
 	"github.com/wakuwaku3/example-dapr-trace/server/lib/otelx"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 type (
@@ -39,7 +40,52 @@ func NewServer(option *ServerOption, middlewares ...MiddlewareFunc) *server {
 }
 
 func (s *server) HandleFunc(pattern string, handler HandleFunc, middlewares ...MiddlewareFunc) {
-	s.mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
+	s.mux.HandleFunc(pattern, otelhttp.WithRouteTag(pattern, http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			ctx, span, err := startSpan(r)
+			if err != nil {
+				s.handleError(w, r, err)
+				return
+			}
+			defer span.End()
+
+			r = r.WithContext(ctx)
+
+			done := make(chan struct{})
+			errorChan := make(chan error, 1)
+			if err := func() error {
+				go func(w http.ResponseWriter, r *http.Request) {
+					defer func() {
+						if err := errorsx.Recover(); err != nil {
+							errorChan <- err
+						}
+					}()
+
+					if err := s.handleWithMiddleware(append(s.middlewares, middlewares...), handler, w, r, 0); err != nil {
+						errorChan <- err
+						return
+					}
+					close(done)
+				}(w, r)
+
+				select {
+				case err := <-errorChan:
+					return err
+				case <-done:
+					break
+				case <-r.Context().Done():
+					return errorsx.Wrap(ErrTimeout)
+				}
+
+				return nil
+			}(); err != nil {
+				s.handleError(w, r, err)
+			}
+		})).ServeHTTP)
+}
+
+func (s *server) handle(handler HandleFunc, middlewares ...MiddlewareFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, span, err := startSpan(r)
 		if err != nil {
 			s.handleError(w, r, err)
@@ -79,7 +125,7 @@ func (s *server) HandleFunc(pattern string, handler HandleFunc, middlewares ...M
 		}(); err != nil {
 			s.handleError(w, r, err)
 		}
-	})
+	}
 }
 
 func (s *server) handleError(w http.ResponseWriter, r *http.Request, err error) {
@@ -99,6 +145,7 @@ func (s *server) handleWithMiddleware(middlewares []MiddlewareFunc, handler Hand
 		middleware := middlewares[index]
 		return middleware(w, r, handler)
 	}
+
 	return handler(w, r)
 }
 

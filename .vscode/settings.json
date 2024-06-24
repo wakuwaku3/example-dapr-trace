@@ -11,9 +11,15 @@
     "httpx",
     "opentelemetry",
     "otel",
+    "otelhttp",
+    "otelslog",
     "otelx",
+    "sdklog",
     "sdktrace",
     "semconv",
+    "stdoutlog",
+    "stdoutmetric",
+    "stdouttrace",
     "traceparent",
     "zipkin"
   ]

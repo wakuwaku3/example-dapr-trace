@@ -2,9 +2,6 @@ package otelx
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"log"
 
 	"github.com/wakuwaku3/example-dapr-trace/server/lib/errorsx"
 	"go.opentelemetry.io/otel/attribute"
@@ -12,7 +9,7 @@ import (
 )
 
 type (
-	logger struct {
+	loggerWrapper struct {
 		ctx  context.Context
 		span trace.Span
 	}
@@ -24,44 +21,50 @@ const (
 	Error level = "error"
 )
 
-func NewLogger(ctx context.Context) *logger {
+func NewLogger(ctx context.Context) *loggerWrapper {
 	span := trace.SpanFromContext(ctx)
-	return &logger{ctx: ctx, span: span}
+	return &loggerWrapper{ctx: ctx, span: span}
 }
 
-func (l *logger) Info(message string, attributes ...attribute.KeyValue) {
-	l.span.AddEvent(message, trace.WithAttributes(attribute.KeyValue{
+func (l *loggerWrapper) Info(message string, attributes ...attribute.KeyValue) {
+	attrs := append(attributes, attribute.KeyValue{
 		Key:   "severity",
 		Value: attribute.StringValue(string(Info)),
-	}), trace.WithAttributes(attributes...))
-	log.Println(append([]interface{}{Info, message}, convertAttributes(attributes...)...)...)
+	})
+	l.span.SetAttributes(attrs...)
+	l.span.AddEvent(message, trace.WithAttributes(attrs...))
+	// log.Println(append([]interface{}{Info, message}, convertAttributes(attrs...)...)...)
+	Logger.InfoContext(l.ctx, message, trace.WithAttributes(attrs...))
 }
 
-func (l *logger) Error(err error, attributes ...attribute.KeyValue) {
-	l.span.AddEvent(err.Error(), trace.WithAttributes(attribute.KeyValue{
+func (l *loggerWrapper) Error(err error, attributes ...attribute.KeyValue) {
+	attrs := append(attributes, attribute.KeyValue{
 		Key:   "severity",
 		Value: attribute.StringValue(string(Error)),
-	}), trace.WithAttributes(attribute.KeyValue{
+	}, attribute.KeyValue{
 		Key:   "stacktrace",
 		Value: attribute.StringValue(errorsx.StackTrace(err)),
-	}), trace.WithAttributes(attributes...))
-	printError(err, convertAttributes(attributes...)...)
+	})
+	l.span.SetAttributes(attrs...)
+	l.span.AddEvent(err.Error(), trace.WithAttributes(attrs...))
+	// printError(err, convertAttributes(attrs...)...)
+	Logger.ErrorContext(l.ctx, err.Error(), trace.WithAttributes(attrs...))
 }
 
-func convertAttributes(attributes ...attribute.KeyValue) []interface{} {
-	a := []interface{}{}
-	for _, v := range attributes {
-		a = append(a, v)
-	}
-	return a
-}
+// func convertAttributes(attributes ...attribute.KeyValue) []interface{} {
+// 	a := []interface{}{}
+// 	for _, v := range attributes {
+// 		a = append(a, v)
+// 	}
+// 	return a
+// }
 
-func printError(err error, args ...any) {
-	log.Printf("%s %v\n", Error, err)
-	converted := &errorsx.Body{}
-	if ok := errors.As(err, &converted); ok {
-		fmt.Println(converted.Args)
-		fmt.Print(converted.Stack)
-	}
-	fmt.Println(args...)
-}
+// func printError(err error, args ...any) {
+// 	log.Printf("%s %v\n", Error, err)
+// 	converted := &errorsx.Body{}
+// 	if ok := errors.As(err, &converted); ok {
+// 		fmt.Println(converted.Args)
+// 		fmt.Print(converted.Stack)
+// 	}
+// 	fmt.Println(args...)
+// }
