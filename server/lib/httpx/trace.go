@@ -2,6 +2,7 @@ package httpx
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -27,6 +28,7 @@ func getParentSpanContext(r *http.Request) (trace.SpanContext, error) {
 	traceparent := GetTraceparent(r)
 	spited := strings.Split(traceparent, "-")
 	if len(spited) != 4 {
+		fmt.Println("invalid traceparent", traceparent)
 		return trace.SpanContext{}, nil
 	}
 	tid, err := trace.TraceIDFromHex(strings.Split(traceparent, "-")[1])

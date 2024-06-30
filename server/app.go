@@ -44,11 +44,21 @@ func main() {
 	defer cancel()
 
 	shutdown, err := otelx.NewBuilder().
-		WithTraceProviderFactory(&otelx.ZipkinTraceProviderFactory{
-			URL:         "http://localhost:9411/api/v2/spans",
-			Logger:      log.New(os.Stderr, "", log.Ldate|log.Ltime|log.Llongfile),
+		WithTraceProviderFactory(&otelx.OtlpTraceProviderFactory{
 			ServiceName: "server",
+			Context:     ctx,
 		}).
+		WithMeterProviderFactory(&otelx.OtlpMeterProviderFactory{
+			ServiceName: "server",
+			Context:     ctx,
+		}).
+		// WithMeterProviderFactory(&otelx.PrometheusMeterProviderFactory{
+		// 	ServiceName: "server",
+		// }).
+		// WithLoggerProviderFactory(&otelx.OtlpLoggerProviderFactory{
+		// 	ServiceName: "server",
+		// 	Context:     ctx,
+		// }).
 		Build(ctx)
 
 	if err != nil {

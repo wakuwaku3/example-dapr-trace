@@ -1,19 +1,109 @@
 version: "3.8"
 
-volumes:
-  postgres-data:
-
 services:
   app:
     build:
-      context: .
+      context: ./app
       dockerfile: Dockerfile
     env_file:
       # Ensure that the variables in .env match the same variables in devcontainer.json
-      - .env
-
+      - ./.env
     volumes:
       - ../..:/workspaces:cached
-
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
+    ports:
+      - "9089:9089"
+  jaeger:
+    image: jaegertracing/all-in-one:${JAEGER_IMAGE_TAG:-1.58}
+    volumes:
+      - "./jaeger/jaeger-ui.json:/etc/jaeger/jaeger-ui.json"
+    command: --query.ui-config /etc/jaeger/jaeger-ui.json
+    environment:
+      - METRICS_STORAGE_TYPE=prometheus
+      - PROMETHEUS_SERVER_URL=http://prometheus:9090
+      - PROMETHEUS_QUERY_SUPPORT_SPANMETRICS_CONNECTOR=${PROMETHEUS_QUERY_SUPPORT_SPANMETRICS_CONNECTOR:-true}
+      - PROMETHEUS_QUERY_NAMESPACE=${PROMETHEUS_QUERY_NAMESPACE:-}
+      - PROMETHEUS_QUERY_DURATION_UNIT=${PROMETHEUS_QUERY_DURATION_UNIT:-}
+      - PROMETHEUS_QUERY_NORMALIZE_CALLS=true
+      - PROMETHEUS_QUERY_NORMALIZE_DURATION=true
+    ports:
+      - "16686:16686"
+  otel_collector:
+    image: otel/opentelemetry-collector-contrib:${OTEL_IMAGE_TAG:-0.103.1}
+    volumes:
+      - ./otelcol/otel-collector-config.yml:/etc/otelcol/otel-collector-config.yml
+    command: --config /etc/otelcol/otel-collector-config.yml
+    ports:
+      - "9464:9464"
+    depends_on:
+      - jaeger
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    volumes:
+      - "./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+  grafana:
+    image: grafana/grafana:11.1.0
+    volumes:
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+      - ./grafana/provisioning/datasources/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yaml
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    ports:
+      - 3000:3000
+  fluentd:
+    build: ./fluentd
+    volumes:
+      - ./fluentd/etc:/fluentd/etc
+    depends_on:
+      - elasticsearch
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.1
+    volumes:
+      - esdata01:/usr/share/elasticsearch/data
+      - ./:/etc/elasticsearch
+    ports:
+      - 9200:9200
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=dev
+      - cluster.initial_master_nodes=elasticsearch
+      - discovery.seed_hosts=elasticsearch
+      - ELASTIC_PASSWORD=elastic
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - xpack.license.self_generated.type=trial
+      - "TZ=Asia/Tokyo"
+    mem_limit: 4294967296
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+  kibana:
+    depends_on:
+      - elasticsearch
+    image: docker.elastic.co/kibana/kibana:8.14.1
+    volumes:
+      - kibanadata:/usr/share/kibana/data
+    ports:
+      - 5601:5601
+    environment:
+      - SERVERNAME=kibana
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=elastic
+      - "TZ=Asia/Tokyo"
+      - I18N_LOCALE="ja-JP"
+    mem_limit: 4294967296
+volumes:
+  esdata01:
+    driver: local
+  kibanadata:
+    driver: local

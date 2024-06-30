@@ -1,8 +1,11 @@
 version: 1
+common:
+  runtimePath: ./
 apps:
   - appDirPath: ./server/
     appID: server
     appPort: 6006
+    metricsPort: 9089
     command: ["go", "run", "."]
   - appID: client
     appDirPath: ./client/
