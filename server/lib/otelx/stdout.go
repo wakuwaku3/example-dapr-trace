@@ -1,6 +1,7 @@
 package otelx
 
 import (
+	"context"
 	"time"
 
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutlog"
@@ -8,13 +9,24 @@ import (
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/sdk/log"
 	"go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 )
 
 type (
-	StdoutTraceProviderFactory  struct{}
-	StdoutMeterProviderFactory  struct{}
-	StdoutLoggerProviderFactory struct{}
+	StdoutTraceProviderFactory struct {
+		Context     context.Context
+		ServiceName string
+	}
+	StdoutMeterProviderFactory struct {
+		Context     context.Context
+		ServiceName string
+	}
+	StdoutLoggerProviderFactory struct {
+		Context     context.Context
+		ServiceName string
+	}
 )
 
 func (s *StdoutTraceProviderFactory) create() (*trace.TracerProvider, error) {
@@ -27,7 +39,12 @@ func (s *StdoutTraceProviderFactory) create() (*trace.TracerProvider, error) {
 	traceProvider := trace.NewTracerProvider(
 		trace.WithBatcher(traceExporter,
 			// Default is 5s. Set to 1s for demonstrative purposes.
-			trace.WithBatchTimeout(time.Second)),
+			trace.WithBatchTimeout(time.Second),
+		),
+		trace.WithResource(resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceName(s.ServiceName),
+		)),
 	)
 	return traceProvider, nil
 }
@@ -41,7 +58,12 @@ func (s *StdoutMeterProviderFactory) create() (*metric.MeterProvider, error) {
 	meterProvider := metric.NewMeterProvider(
 		metric.WithReader(metric.NewPeriodicReader(metricExporter,
 			// Default is 1m. Set to 3s for demonstrative purposes.
-			metric.WithInterval(3*time.Second))),
+			metric.WithInterval(3*time.Second)),
+		),
+		metric.WithResource(resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceName(s.ServiceName),
+		)),
 	)
 	return meterProvider, nil
 }
@@ -54,6 +76,10 @@ func (s *StdoutLoggerProviderFactory) create() (*log.LoggerProvider, error) {
 
 	loggerProvider := log.NewLoggerProvider(
 		log.WithProcessor(log.NewBatchProcessor(logExporter)),
+		log.WithResource(resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceName(s.ServiceName),
+		)),
 	)
 	return loggerProvider, nil
 }

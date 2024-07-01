@@ -37,7 +37,7 @@ func (c *counter) GetOrAdd(name string) (metric.Int64Counter, error) {
 	defer c.mu.Unlock()
 
 	if _, ok := c.value[name]; !ok {
-		m, err := Meter.Int64Counter(name)
+		m, err := Provider.meter.Int64Counter(name)
 		if err != nil {
 			return nil, err
 		}

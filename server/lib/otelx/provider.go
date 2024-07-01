@@ -1,14 +1,44 @@
 package otelx
 
 import (
-	"go.opentelemetry.io/contrib/bridges/otelslog"
-	"go.opentelemetry.io/otel"
+	"log/slog"
+
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 )
 
-const name = "dapr-diagnostics"
+type (
+	provider struct {
+		tracer trace.Tracer
+		meter  metric.Meter
+		logger *slog.Logger
+	}
+)
 
 var (
-	Tracer = otel.Tracer(name)
-	Meter  = otel.Meter(name)
-	Logger = otelslog.NewLogger(name)
+	Provider = &provider{}
 )
+
+func (p *provider) GetTracer() trace.Tracer {
+	return p.tracer
+}
+
+func (p *provider) SetTracer(tracer trace.Tracer) {
+	p.tracer = tracer
+}
+
+func (p *provider) GetMeter() metric.Meter {
+	return p.meter
+}
+
+func (p *provider) SetMeter(meter metric.Meter) {
+	p.meter = meter
+}
+
+func (p *provider) GetLogger() *slog.Logger {
+	return p.logger
+}
+
+func (p *provider) SetLogger(logger *slog.Logger) {
+	p.logger = logger
+}

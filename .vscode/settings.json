@@ -7,9 +7,12 @@
   "cSpell.words": [
     "dapr",
     "errorsx",
+    "fluentd",
+    "fluentx",
     "HTTPURL",
     "httpx",
     "loglevel",
+    "logx",
     "opentelemetry",
     "otel",
     "otelhttp",

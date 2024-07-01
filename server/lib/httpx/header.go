@@ -1,7 +1,10 @@
 package httpx
 
-import "net/http"
+import (
+	"net/http"
+)
 
 func GetTraceparent(r *http.Request) string {
-	return r.Header.Get("Traceparent")
+	traceparent := r.Header.Get("Traceparent")
+	return traceparent
 }

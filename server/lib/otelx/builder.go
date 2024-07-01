@@ -3,6 +3,7 @@ package otelx
 import (
 	"context"
 
+	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/propagation"
@@ -13,6 +14,7 @@ import (
 
 type (
 	builder struct {
+		name                  string
 		traceProviderFactory  traceProviderFactory
 		meterProviderFactory  meterProviderFactory
 		loggerProviderFactory loggerProviderFactory
@@ -28,11 +30,9 @@ type (
 	}
 )
 
-func NewBuilder() *builder {
+func NewBuilder(name string) *builder {
 	return &builder{
-		traceProviderFactory:  &StdoutTraceProviderFactory{},
-		meterProviderFactory:  &StdoutMeterProviderFactory{},
-		loggerProviderFactory: &StdoutLoggerProviderFactory{},
+		name: name,
 	}
 }
 
@@ -57,26 +57,36 @@ func (b *builder) Build(ctx context.Context) (ShutdownFunc, error) {
 
 	shutdownFuncs := &shutdownFuncs{}
 
-	tp, err := b.traceProviderFactory.create()
-	if err != nil {
-		return nil, shutdownFuncs.shutdownWithError(err, ctx)
+	if b.traceProviderFactory != nil {
+		tp, err := b.traceProviderFactory.create()
+		if err != nil {
+			return nil, shutdownFuncs.shutdownWithError(err, ctx)
+		}
+		shutdownFuncs.add(tp.Shutdown)
+		otel.SetTracerProvider(tp)
+		Provider.SetTracer(otel.Tracer(b.name))
 	}
-	shutdownFuncs.add(tp.Shutdown)
-	otel.SetTracerProvider(tp)
 
-	meterProvider, err := b.meterProviderFactory.create()
-	if err != nil {
-		return nil, shutdownFuncs.shutdownWithError(err, ctx)
+	if b.meterProviderFactory != nil {
+		meterProvider, err := b.meterProviderFactory.create()
+		if err != nil {
+			return nil, shutdownFuncs.shutdownWithError(err, ctx)
+		}
+		shutdownFuncs.add(meterProvider.Shutdown)
+		otel.SetMeterProvider(meterProvider)
+		Provider.SetMeter(otel.Meter(b.name))
 	}
-	shutdownFuncs.add(meterProvider.Shutdown)
-	otel.SetMeterProvider(meterProvider)
 
-	loggerProvider, err := b.loggerProviderFactory.create()
-	if err != nil {
-		return nil, shutdownFuncs.shutdownWithError(err, ctx)
+	if b.loggerProviderFactory != nil {
+		loggerProvider, err := b.loggerProviderFactory.create()
+		if err != nil {
+			return nil, shutdownFuncs.shutdownWithError(err, ctx)
+		}
+		shutdownFuncs.add(loggerProvider.Shutdown)
+		global.SetLoggerProvider(loggerProvider)
+
+		Provider.SetLogger(otelslog.NewLogger(b.name))
 	}
-	shutdownFuncs.add(loggerProvider.Shutdown)
-	global.SetLoggerProvider(loggerProvider)
 
 	return shutdownFuncs.shutdown, nil
 }

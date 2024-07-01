@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/wakuwaku3/example-dapr-trace/server/lib/errorsx"
-	"github.com/wakuwaku3/example-dapr-trace/server/lib/otelx"
+	"github.com/wakuwaku3/example-dapr-trace/server/lib/logx"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
@@ -85,8 +85,8 @@ func (s *server) HandleFunc(pattern string, handler HandleFunc, middlewares ...M
 }
 
 func (s *server) handleError(w http.ResponseWriter, r *http.Request, err error) {
-	logger := otelx.NewLogger(r.Context())
-	logger.Error(err)
+	logger := logx.Provider.Get()
+	logger.Error(r.Context(), err)
 	w.WriteHeader(http.StatusInternalServerError)
 }
 
@@ -106,7 +106,7 @@ func (s *server) handleWithMiddleware(middlewares []MiddlewareFunc, handler Hand
 }
 
 func (s *server) Serve(ctx context.Context) error {
-	logger := otelx.NewLogger(ctx)
+	logger := logx.Provider.Get()
 	srv := &http.Server{
 		ReadTimeout:  s.option.ReadTimeout,
 		WriteTimeout: s.option.WriteTimeout,
@@ -115,7 +115,7 @@ func (s *server) Serve(ctx context.Context) error {
 		Addr:         fmt.Sprintf(":%s", s.option.Port),
 	}
 
-	logger.Info(fmt.Sprintf("server started on %s", s.option.Port))
+	logger.Info(ctx, fmt.Sprintf("server started on %s", s.option.Port))
 	go srv.ListenAndServe()
 
 	<-ctx.Done()

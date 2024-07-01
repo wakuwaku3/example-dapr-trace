@@ -12,7 +12,7 @@ import (
 )
 
 func startSpan(r *http.Request) (context.Context, trace.Span, error) {
-	tr := otelx.Tracer
+	tr := otelx.Provider.GetTracer()
 	spanContext, err := getParentSpanContext(r)
 	if err != nil {
 		return nil, nil, err

@@ -4,67 +4,60 @@ import (
 	"context"
 
 	"github.com/wakuwaku3/example-dapr-trace/server/lib/errorsx"
+	"github.com/wakuwaku3/example-dapr-trace/server/lib/logx"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
 type (
-	loggerWrapper struct {
-		ctx  context.Context
-		span trace.Span
-	}
-	level string
+	loggerWrapper struct{}
 )
 
-const (
-	Info  level = "info"
-	Error level = "error"
-)
-
-func NewLogger(ctx context.Context) *loggerWrapper {
-	span := trace.SpanFromContext(ctx)
-	return &loggerWrapper{ctx: ctx, span: span}
+func NewLogger() *loggerWrapper {
+	return &loggerWrapper{}
 }
 
-func (l *loggerWrapper) Info(message string, attributes ...attribute.KeyValue) {
-	attrs := append(attributes, attribute.KeyValue{
+var _ logx.Logger = &loggerWrapper{}
+
+func (l *loggerWrapper) Info(ctx context.Context, message string, attributes ...logx.KeyValue) {
+	attrs := append(convertAttributes(attributes...), attribute.KeyValue{
 		Key:   "severity",
-		Value: attribute.StringValue(string(Info)),
+		Value: attribute.StringValue(string(logx.Info)),
 	})
-	l.span.SetAttributes(attrs...)
-	l.span.AddEvent(message, trace.WithAttributes(attrs...))
-	// log.Println(append([]interface{}{Info, message}, convertAttributes(attrs...)...)...)
-	Logger.InfoContext(l.ctx, message, trace.WithAttributes(attrs...))
+	if span := trace.SpanFromContext(ctx); span != nil {
+		span.SetAttributes(attrs...)
+		span.AddEvent(message, trace.WithAttributes(attrs...))
+	}
+	if logger := Provider.GetLogger(); logger != nil {
+		logger.InfoContext(ctx, message, trace.WithAttributes(attrs...))
+	}
 }
 
-func (l *loggerWrapper) Error(err error, attributes ...attribute.KeyValue) {
-	attrs := append(attributes, attribute.KeyValue{
+func (l *loggerWrapper) Error(ctx context.Context, err error, attributes ...logx.KeyValue) {
+	attrs := append(convertAttributes(attributes...), attribute.KeyValue{
 		Key:   "severity",
-		Value: attribute.StringValue(string(Error)),
+		Value: attribute.StringValue(string(logx.Error)),
 	}, attribute.KeyValue{
 		Key:   "stacktrace",
 		Value: attribute.StringValue(errorsx.StackTrace(err)),
 	})
-	l.span.SetAttributes(attrs...)
-	l.span.AddEvent(err.Error(), trace.WithAttributes(attrs...))
-	// printError(err, convertAttributes(attrs...)...)
-	Logger.ErrorContext(l.ctx, err.Error(), trace.WithAttributes(attrs...))
+
+	if span := trace.SpanFromContext(ctx); span != nil {
+		span.SetAttributes(attrs...)
+		span.AddEvent(err.Error(), trace.WithAttributes(attrs...))
+	}
+	if logger := Provider.GetLogger(); logger != nil {
+		logger.ErrorContext(ctx, err.Error(), trace.WithAttributes(attrs...))
+	}
 }
 
-// func convertAttributes(attributes ...attribute.KeyValue) []interface{} {
-// 	a := []interface{}{}
-// 	for _, v := range attributes {
-// 		a = append(a, v)
-// 	}
-// 	return a
-// }
-
-// func printError(err error, args ...any) {
-// 	log.Printf("%s %v\n", Error, err)
-// 	converted := &errorsx.Body{}
-// 	if ok := errors.As(err, &converted); ok {
-// 		fmt.Println(converted.Args)
-// 		fmt.Print(converted.Stack)
-// 	}
-// 	fmt.Println(args...)
-// }
+func convertAttributes(attributes ...logx.KeyValue) []attribute.KeyValue {
+	var attrs []attribute.KeyValue
+	for _, v := range attributes {
+		attrs = append(attrs, attribute.KeyValue{
+			Key:   attribute.Key(v.Key),
+			Value: attribute.StringValue(v.Value),
+		})
+	}
+	return attrs
+}
