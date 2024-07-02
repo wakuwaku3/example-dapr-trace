@@ -5,18 +5,22 @@
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "./server"
+      "program": "${workspaceFolder}/server",
+      "preLaunchTask": "daprd-debug-server",
+      "postDebugTask": "daprd-down-server",
     },
     {
       "name": "Launch client",
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "./client",
+      "program": "${workspaceFolder}/client",
       "env": {
         "DAPR_HTTP_PORT": "6006",
       },
-    }
+      "preLaunchTask": "daprd-debug-client",
+      "postDebugTask": "daprd-down-client",
+    },
   ],
   "compounds": [
     {
@@ -24,7 +28,8 @@
       "configurations": [
         "Launch server",
         "Launch client"
-      ]
+      ],
+      "stopAll": true
     }
   ]
 }

@@ -16,14 +16,14 @@ vscode の dev container で開いてください。
 
 ```shell
 cd server
-dapr run --app-port 6006 --app-id server --app-protocol http --dapr-http-port 3501 --runtime-path ../ -- go run .
+dapr run --app-port 6006 --app-id server --app-protocol http --dapr-http-port 3501 -c ../.dapr/config.yaml --runtime-path ../ --resources-path ../.dapr/components -- go run .
 ```
 
 ### client を動かす
 
 ```shell
 cd client
-dapr run --app-id client --app-protocol http --dapr-http-port 3500 --runtime-path ../ -- go run .
+dapr run --app-port 6005 --app-id client --app-protocol http --dapr-http-port 3500 -c ../.dapr/config.yaml --runtime-path ../ --resources-path ../.dapr/components -- go run .
 ```
 
 ### 全部動かす

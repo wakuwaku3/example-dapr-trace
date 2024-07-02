@@ -18,6 +18,7 @@
 		}
 	],
 	"settings": {
+		"dapr.paths.daprdPath": "./.dapr/bin/daprd",
 		"cSpell.ignorePaths": [
 			".git/objects",
 			".vscode",

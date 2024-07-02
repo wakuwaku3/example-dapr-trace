@@ -2,11 +2,21 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"type": "dapr",
+			"label": "dapr-run",
+			"runFile": "."
+		},
+		{
 			"label": "daprd-debug-server",
 			"type": "daprd",
 			"appId": "server",
 			"appPort": 6006,
-			"metricsPort": 9089
+			"httpPort": 3501,
+			"grpcPort": 50001,
+			"metricsPort": 9089,
+			"resourcesPath": "./.dapr/components",
+			"config": "./.dapr/config.yaml",
+			"componentsPath": ""
 		},
 		{
 			"label": "daprd-down-server",
@@ -17,7 +27,13 @@
 			"label": "daprd-debug-client",
 			"type": "daprd",
 			"appId": "client",
-			"metricsPort": 9091
+			"appPort": 6005,
+			"metricsPort": 9088,
+			"httpPort": 3500,
+			"grpcPort": 50000,
+			"resourcesPath": "./.dapr/components",
+			"config": "./.dapr/config.yaml",
+			"componentsPath": "",
 		},
 		{
 			"label": "daprd-down-client",

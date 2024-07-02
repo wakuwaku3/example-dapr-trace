@@ -19,7 +19,7 @@ func startSpan(r *http.Request) (context.Context, trace.Span, error) {
 		return nil, nil, err
 	}
 
-	name := r.Method + " " + r.RequestURI
+	name := r.Method + r.RequestURI
 	ctx, span := tr.Start(trace.ContextWithSpanContext(r.Context(), spanContext), name, trace.WithSpanKind(trace.SpanKindServer), trace.WithAttributes(semconv.HTTPMethodKey.String(r.Method), semconv.HTTPURLKey.String(r.RequestURI)))
 	if err := otelx.Count(ctx, name); err != nil {
 		return nil, nil, errorsx.Wrap(err)
