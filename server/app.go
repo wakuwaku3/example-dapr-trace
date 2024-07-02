@@ -69,6 +69,8 @@ func main() {
 			CancelTimeout: 5 * time.Second,
 		},
 	)
+
+	// route.
 	server.HandleFunc("/orders", order.Get)
 
 	if err := server.Serve(ctx); !errors.Is(err, http.ErrServerClosed) {

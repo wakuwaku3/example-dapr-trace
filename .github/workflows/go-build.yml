@@ -1,0 +1,126 @@
+on:
+  push:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  pre-build-devcontainer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - uses: devcontainers/ci@v0.3
+        with:
+          imageName: ghcr.io/wakuwaku3/example-dapr-trace/devcontainer
+          cacheFrom: ghcr.io/wakuwaku3/example-dapr-trace/devcontainer
+          push: always
+  changes:
+    uses: ./.github/workflows/use-get-changed-go-modules.yml
+
+  build:
+    runs-on: ubuntu-latest
+    needs:
+      - changes
+      - pre-build-devcontainer
+    if: ${{ needs.changes.outputs.modules != '[]' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ${{ fromJSON(needs.changes.outputs.modules) }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run make ci-build in dev container
+        uses: devcontainers/ci@v0.3
+        with:
+          cacheFrom: ghcr.io/wakuwaku3/example-dapr-trace/devcontainer
+          push: never
+          runCmd: |
+            cd ${{ matrix.module }}
+            go build -o ./out/ .
+
+  lint:
+    runs-on: ubuntu-latest
+    needs:
+      - changes
+      - pre-build-devcontainer
+    if: ${{ needs.changes.outputs.modules != '[]' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ${{ fromJSON(needs.changes.outputs.modules) }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run make ci-build in dev container
+        uses: devcontainers/ci@v0.3
+        with:
+          cacheFrom: ghcr.io/wakuwaku3/example-dapr-trace/devcontainer
+          push: never
+          runCmd: |
+            cd ${{ matrix.module }}
+            golangci-lint run --timeout=5m
+
+  test:
+    runs-on: ubuntu-latest
+    needs:
+      - changes
+      - pre-build-devcontainer
+    if: ${{ needs.changes.outputs.modules != '[]' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ${{ fromJSON(needs.changes.outputs.modules) }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run make ci-build in dev container
+        uses: devcontainers/ci@v0.3
+        with:
+          cacheFrom: ghcr.io/wakuwaku3/example-dapr-trace/devcontainer
+          push: never
+          runCmd: |
+            cd ${{ matrix.module }}
+            mkdir -p ./tmp
+            go test -race -p=4 -parallel=8 -timeout=300s -cover -coverprofile=./tmp/coverage.txt -shuffle=on ./...
+
+  diff-check:
+    runs-on: ubuntu-latest
+    needs:
+      - changes
+      - pre-build-devcontainer
+    if: ${{ needs.changes.outputs.modules != '[]' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ${{ fromJSON(needs.changes.outputs.modules) }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run make ci-build in dev container
+        uses: devcontainers/ci@v0.3
+        with:
+          cacheFrom: ghcr.io/wakuwaku3/example-dapr-trace/devcontainer
+          push: never
+          runCmd: |
+            cd ${{ matrix.module }}
+            go mod tidy
+            git diff --exit-code
+
+  go-build-completion:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+      - test
+      - lint
+      - diff-check
+    steps:
+      - name: Build completion
+        run: echo "go-build-completion"

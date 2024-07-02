@@ -1,0 +1,19 @@
+on:
+  workflow_call:
+    outputs:
+      modules:
+        value: ${{ jobs.changes.outputs.modules }}
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      modules: ${{ steps.filter.outputs.changes }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          ./.github/scripts/get-go-modules.sh > ./filters.yaml
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: filters.yaml

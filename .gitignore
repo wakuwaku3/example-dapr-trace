@@ -1,3 +1,4 @@
 **/.dapr/logs/*
-**/out/*
+**/out
 .dapr/bin
+**/tmp

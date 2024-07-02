@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/wakuwaku3/example-dapr-trace/server/lib/errorsx"
 	"github.com/wakuwaku3/example-dapr-trace/server/lib/otelx"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.opentelemetry.io/otel/trace"
@@ -20,7 +21,9 @@ func startSpan(r *http.Request) (context.Context, trace.Span, error) {
 
 	name := r.Method + " " + r.RequestURI
 	ctx, span := tr.Start(trace.ContextWithSpanContext(r.Context(), spanContext), name, trace.WithSpanKind(trace.SpanKindServer), trace.WithAttributes(semconv.HTTPMethodKey.String(r.Method), semconv.HTTPURLKey.String(r.RequestURI)))
-	otelx.Count(ctx, name)
+	if err := otelx.Count(ctx, name); err != nil {
+		return nil, nil, errorsx.Wrap(err)
+	}
 	return ctx, span, nil
 }
 

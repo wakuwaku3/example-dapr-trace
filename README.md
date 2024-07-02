@@ -4,11 +4,13 @@
 
 vscode の dev container で開いてください。
 
-```shell
-./operations/init.sh
-```
-
 ## commands
+
+### 初期化する
+
+```shell
+./.cmd/init.sh
+```
 
 ### server を動かす
 
@@ -30,7 +32,7 @@ dapr run --app-id client --app-protocol http --dapr-http-port 3500 --runtime-pat
 dapr run -f .
 ```
 
-### trace
+## Tools
 
 - [zipkin](http://localhost:9411)
 - [jaeger](http://localhost:16686)

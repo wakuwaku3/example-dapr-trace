@@ -29,7 +29,7 @@ func (l *loggerWrapper) Info(ctx context.Context, message string, attributes ...
 		span.AddEvent(message, trace.WithAttributes(attrs...))
 	}
 	if logger := Provider.GetLogger(); logger != nil {
-		logger.InfoContext(ctx, message, trace.WithAttributes(attrs...))
+		logger.InfoContext(ctx, message, convertAnyArray(attrs...)...)
 	}
 }
 
@@ -47,7 +47,7 @@ func (l *loggerWrapper) Error(ctx context.Context, err error, attributes ...logx
 		span.AddEvent(err.Error(), trace.WithAttributes(attrs...))
 	}
 	if logger := Provider.GetLogger(); logger != nil {
-		logger.ErrorContext(ctx, err.Error(), trace.WithAttributes(attrs...))
+		logger.ErrorContext(ctx, err.Error(), convertAnyArray(attrs...)...)
 	}
 }
 
@@ -58,6 +58,14 @@ func convertAttributes(attributes ...logx.KeyValue) []attribute.KeyValue {
 			Key:   attribute.Key(v.Key),
 			Value: attribute.StringValue(v.Value),
 		})
+	}
+	return attrs
+}
+
+func convertAnyArray(attributes ...attribute.KeyValue) []any {
+	var attrs []any
+	for _, v := range attributes {
+		attrs = append(attrs, v)
 	}
 	return attrs
 }

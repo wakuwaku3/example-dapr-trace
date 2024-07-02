@@ -116,7 +116,11 @@ func (s *server) Serve(ctx context.Context) error {
 	}
 
 	logger.Info(ctx, fmt.Sprintf("server started on %s", s.option.Port))
-	go srv.ListenAndServe()
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			panic(err)
+		}
+	}()
 
 	<-ctx.Done()
 	ctx, cancel := context.WithTimeout(context.Background(), s.option.CancelTimeout)
