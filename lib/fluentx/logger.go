@@ -7,9 +7,9 @@ import (
 	"log"
 
 	"github.com/fluent/fluent-logger-golang/fluent"
-	"github.com/wakuwaku3/example-dapr-trace/server/lib/errorsx"
-	"github.com/wakuwaku3/example-dapr-trace/server/lib/logx"
-	"github.com/wakuwaku3/example-dapr-trace/server/lib/otelx"
+	"github.com/wakuwaku3/example-dapr-trace/lib/errorsx"
+	"github.com/wakuwaku3/example-dapr-trace/lib/logx"
+	"github.com/wakuwaku3/example-dapr-trace/lib/otelx"
 )
 
 type (

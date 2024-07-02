@@ -1,0 +1,59 @@
+{
+	"folders": [
+		{
+			"name": "example-dapr-trace",
+			"path": "."
+		},
+		{
+			"name": "client",
+			"path": "client"
+		},
+		{
+			"name": "server",
+			"path": "server"
+		},
+		{
+			"name": "lib",
+			"path": "lib"
+		}
+	],
+	"settings": {
+		"cSpell.ignorePaths": [
+			".git/objects",
+			".vscode",
+			".devcontainer/devcontainer.json",
+			"monorepo.code-workspace",
+		],
+		"cSpell.words": [
+			"dapr",
+			"errorsx",
+			"fluentd",
+			"fluentx",
+			"HTTPURL",
+			"httpx",
+			"loglevel",
+			"logx",
+			"opentelemetry",
+			"otel",
+			"otelhttp",
+			"otelslog",
+			"otelx",
+			"otlp",
+			"otlplog",
+			"otlploghttp",
+			"otlpmetric",
+			"otlpmetricgrpc",
+			"otlptrace",
+			"otlptracegrpc",
+			"sdklog",
+			"sdktrace",
+			"semconv",
+			"spanmetrics",
+			"stdoutlog",
+			"stdoutmetric",
+			"stdouttrace",
+			"traceparent",
+			"zipkin"
+		],
+	}
+}

@@ -10,11 +10,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/wakuwaku3/example-dapr-trace/lib/fluentx"
+	"github.com/wakuwaku3/example-dapr-trace/lib/httpx"
+	"github.com/wakuwaku3/example-dapr-trace/lib/logx"
+	"github.com/wakuwaku3/example-dapr-trace/lib/otelx"
 	"github.com/wakuwaku3/example-dapr-trace/server/app/order"
-	"github.com/wakuwaku3/example-dapr-trace/server/lib/fluentx"
-	"github.com/wakuwaku3/example-dapr-trace/server/lib/httpx"
-	"github.com/wakuwaku3/example-dapr-trace/server/lib/logx"
-	"github.com/wakuwaku3/example-dapr-trace/server/lib/otelx"
 )
 
 func main() {

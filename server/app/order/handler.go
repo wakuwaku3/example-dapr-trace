@@ -5,8 +5,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/wakuwaku3/example-dapr-trace/server/lib/errorsx"
-	"github.com/wakuwaku3/example-dapr-trace/server/lib/logx"
+	"github.com/wakuwaku3/example-dapr-trace/lib/errorsx"
+	"github.com/wakuwaku3/example-dapr-trace/lib/logx"
 )
 
 func Get(w http.ResponseWriter, r *http.Request) error {

@@ -3,7 +3,7 @@ package otelx
 import (
 	"context"
 
-	"github.com/wakuwaku3/example-dapr-trace/server/lib/errorsx"
+	"github.com/wakuwaku3/example-dapr-trace/lib/errorsx"
 )
 
 type (

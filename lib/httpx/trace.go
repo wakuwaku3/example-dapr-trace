@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/wakuwaku3/example-dapr-trace/server/lib/errorsx"
-	"github.com/wakuwaku3/example-dapr-trace/server/lib/otelx"
+	"github.com/wakuwaku3/example-dapr-trace/lib/errorsx"
+	"github.com/wakuwaku3/example-dapr-trace/lib/otelx"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.opentelemetry.io/otel/trace"
 )

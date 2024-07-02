@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/wakuwaku3/example-dapr-trace/server/lib/errorsx"
+	"github.com/wakuwaku3/example-dapr-trace/lib/errorsx"
 	"go.opentelemetry.io/otel/trace"
 )
 
