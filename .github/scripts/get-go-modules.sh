@@ -5,7 +5,7 @@ script_dir=$(dirname "$script_path")
 cd $script_dir
 root_path=$(builtin cd $script_dir/../..; pwd)
 cd $root_path
-black_list=".cmd/|.dapr/|.devcontainer/|.github/|.vscode/"
+black_list=".cmd/|.dapr/|.devcontainer/|.github/|.vscode/|lib"
 results+=""
 
 for dir in $(ls -d */ | grep -v -E "$black_list"); do
@@ -20,6 +20,7 @@ for dir in $(ls -d */ | grep -v -E "$black_list"); do
         results+="\n"
     fi
     results+="$dir: "
+    results+="\n  - 'lib/**/*'"
     results+="\n  - '$dir/**/*'"
 done
 
